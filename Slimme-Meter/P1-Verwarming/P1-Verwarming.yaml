@@ -1,0 +1,61 @@
+---
+substitutions:
+  device_name: P1-Verwarming
+  friendly_name: P1 Verwarming
+  device_description: "ESPHome config for P1 heating measurements (Warmtelink / Stadsverwarming / Stadswarmte)"
+
+esphome:
+  includes:
+  - uart_read_line_sensor.h
+  name: '${device_name}'
+  platform: ESP8266
+  board: d1_mini
+
+# Enable Home Assistant API
+api:
+
+ota:
+  #password: "SomeOtaPassword"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+captive_portal:
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: '${device_name}'
+    password: !secret fallback_password
+
+logger:
+  level: VERBOSE #makes uart stream available in esphome logstream
+  baud_rate: 0 #disable logging over uart
+
+uart:
+  id: uart_bus
+  rx_pin: RX
+  baud_rate: 115200
+
+text_sensor:
+- platform: custom
+  lambda: |-
+    auto uartLine = new UartReadLineSensor(id(uart_bus));
+    App.register_component(uartLine);
+
+    return {uartLine};
+  text_sensors:
+    id: "uartLine"
+
+- platform: template
+  name: "timestamp"
+  update_interval: 10s
+  lambda: |-
+    String str = String(id(uartLine).state.c_str());
+    return {str.substring(11, 23).c_str()};
+
+- platform: template
+  name: "GJ"
+  update_interval: 10s
+  lambda: |-
+    String str = String(id(uartLine).state.c_str());
+    return {str.substring(26, 32).c_str()};
