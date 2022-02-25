@@ -8,7 +8,7 @@ De [`P1-Mini.yaml`](Slimme-Meter/P1-Mini.yaml) is het kleine broertje. Dit besta
 
 ### P1 - Verwarming (Stadsverwarming / Warmtelink)
 Heeft u een 'Warmtelink' P1 port voor het meten van verwarming (stadsverwarming / stadswarmte) de [`P1-Verwarming/P1-Verwarming.yaml`](Slimme-Meter/P1-Verwarming/P1-Verwarming.yaml) kunt u gebruiken.
-De [`P1-Verwarming/uart_read_line_sensor.h`](uart_read_line_sensor.h) is nodig als u de firmware wilt bouwen.
+De [`uart_read_line_sensor.h`](Slimme-Meter/P1-Verwarming/uart_read_line_sensor.h) is nodig als u de firmware wilt bouwen.
 
 Deze print kan niet worden gebruikt voor warmtemeting met IR optische uitlezing, zoals L+G Ultraheat. Alleen recent geïnstalleerde apparaten met P1 (RJ12) poorten kunnen worden gebruikt.
 
