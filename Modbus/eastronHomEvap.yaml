@@ -1,0 +1,139 @@
+---
+substitutions:
+  device_name: Modbus-Reading
+  friendly_name: Modbus Shield
+  device_description: "Modbus module voor uitlezen/schrijven van RS485 Data"
+  version: '1.0'
+
+  project:
+    name: Dutch DIY smart home things - Modbus
+    version: "${version}"
+    
+esphome:
+  name: '${device_name}'
+  platform: ESP8266
+  board: d1_mini
+
+# Enable Home Assistant API
+api:
+
+ota:
+  #password: "SomeOtaPassword"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+captive_portal:
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: '${device_name}'
+    password: 'espsetup'
+
+# Enable/Disable logging
+logger:
+  #level: VERBOSE
+  #baud_rate: 0
+
+switch:
+  - platform: restart
+    id: switch_restart
+    name: "${friendly_name} Restart"
+
+uart:
+  id: mod_bus
+  tx_pin: D7
+  rx_pin: D6
+  baud_rate: 9600
+  stop_bits: 1
+  
+modbus:
+  flow_control_pin: D5
+  id: modbus1
+  send_wait_time: 1000ms
+
+modbus_controller:
+  - id: homevap
+    ## the Modbus device addr (defaults to 247 (0xF7) for goodwe inverters)
+    address: 0xF7
+    modbus_id: modbus1
+    setup_priority: -10
+    #command_throttle: 250ms
+    update_interval: 15s
+
+sensor:
+  - platform: modbus_controller
+    modbus_controller_id: goodwe
+    id: pv_temperature
+    name: "Temperature"
+    address: 0x030F
+    unit_of_measurement: "C"
+    register_type: holding
+    value_type: S_WORD
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.1
+
+  - platform: sdm_meter
+    phase_a:
+      current:
+        name: "SDM220M Current"
+      voltage:
+        name: "SDM220M Voltage"
+      active_power:
+        name: "SDM220M Power"
+      power_factor:
+        name: "SDM220M Power Factor"
+      apparent_power:
+        name: "SDM220M Apparent Power"
+      reactive_power:
+        name: "SDM220M Reactive Power"
+      phase_angle:
+        name: "SDM220M Phase Angle"
+    frequency:
+      name: "SDM220M Frequency"
+    import_active_energy:
+      name: "SDM220M Import Active Energy"
+    export_active_energy:
+      name: "SDM220M Export Active Energy"
+    import_reactive_energy:
+      name: "SDM220M Import Reactive Energy"
+    export_reactive_energy:
+      name: "SDM220M Export Reactive Energy"
+    update_interval: 60s
+    address: 1
+  - platform: sdm_meter
+    phase_a:
+      current:
+        name: "SDM220M Current"
+      voltage:
+        name: "SDM220M Voltage"
+      active_power:
+        name: "SDM220M Power"
+      power_factor:
+        name: "SDM220M Power Factor"
+      apparent_power:
+        name: "SDM220M Apparent Power"
+      reactive_power:
+        name: "SDM220M Reactive Power"
+      phase_angle:
+        name: "SDM220M Phase Angle"
+    frequency:
+      name: "SDM220M Frequency"
+    import_active_energy:
+      name: "SDM220M Import Active Energy"
+    export_active_energy:
+      name: "SDM220M Export Active Energy"
+    import_reactive_energy:
+      name: "SDM220M Import Reactive Energy"
+    export_reactive_energy:
+      name: "SDM220M Export Reactive Energy"
+    update_interval: 60s
+    address: 2
+
+  - platform: template
+    id: text_sensor_modbus_version
+    name: "${friendly_name} Version"
+    update_interval: 5h
+    lambda: |-
+      return {"${version}"};

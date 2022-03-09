@@ -3,6 +3,11 @@ substitutions:
   device_name: P1-Mini
   friendly_name: P1 Mini
   device_description: "P1 Mini only for the DSMR5"
+  version: '1.0'
+
+  project:
+    name: Dutch DIY smart home things - P1 Monitor
+    version: "${version}"
 
 esphome:
   name: '${device_name}'
@@ -23,7 +28,17 @@ captive_portal:
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
     ssid: '${device_name}'
-    password: !secret fallback_password
+    password: 'espsetup'
+
+# Disable logging (uses the same uart as P1)
+logger:
+  level: WARN
+  baud_rate: 0
+
+switch:
+  - platform: restart
+    id: switch_restart
+    name: "${friendly_name} Restart"
 
 dsmr:
   id: dsmr_instance
@@ -78,14 +93,16 @@ sensor:
     #gas_delivered:
     #  name: Gas Consumed
 
+  - platform: template
+    id: text_sensor_P1_Monitor_version
+    name: "${friendly_name} Version"
+    update_interval: 5h
+    lambda: |-
+      return {"${version}"};
+
 text_sensor:
   - platform: dsmr
     identification:
       name: "DSMR Identification"
     p1_version:
       name: "DSMR Version"
-
-# Disable logging (uses the same uart as P1)
-logger:
-  level: WARN
-  baud_rate: 0

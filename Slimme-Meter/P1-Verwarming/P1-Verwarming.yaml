@@ -3,6 +3,11 @@ substitutions:
   device_name: P1-Verwarming
   friendly_name: P1 Verwarming
   device_description: "ESPHome config for P1 heating measurements (Warmtelink / Stadsverwarming / Stadswarmte)"
+  version: '1.0'
+
+  project:
+    name: Dutch DIY smart home things - P1 Verwarming
+    version: "${version}"
 
 esphome:
   includes:
@@ -25,16 +30,29 @@ captive_portal:
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
     ssid: '${device_name}'
-    password: !secret fallback_password
+    password: 'espsetup'
 
 logger:
   level: VERBOSE #makes uart stream available in esphome logstream
   baud_rate: 0 #disable logging over uart
 
+switch:
+  - platform: restart
+    id: switch_restart
+    name: "${friendly_name} Restart"
+
 uart:
   id: uart_bus
   rx_pin: RX
   baud_rate: 115200
+
+sensor:
+  - platform: template
+    id: text_sensor_P1_verwarming_version
+    name: "${friendly_name} Version"
+    update_interval: 5h
+    lambda: |-
+      return {"${version}"};
 
 text_sensor:
 - platform: custom

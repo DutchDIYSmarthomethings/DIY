@@ -1,7 +1,12 @@
 substitutions:
   device_name: itho-control
   friendly_name: Itho Control
-  device_description: "Control your itho system"
+  device_description: "Control your Itho/Duco system"
+  version: '1.0'
+
+  project:
+    name: Dutch DIY smart home things - Itho/Duco
+    version: "${version}"
 
 esphome:
   name: '${device_name}'
@@ -21,6 +26,7 @@ esphome:
           Mydeviceid="Homeassistant"; 
           rf.setDeviceID(10,87,81); //ID for sending: 10,87,81 was used in old library
           id(swfan_low).turn_on(); //This ensures fan is at low-speed at boot
+          
 esp8266:
   board: d1_mini
   framework:
@@ -33,7 +39,7 @@ wifi:
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
     ssid: '${device_name}'
-    password: !secret fallback_password
+    password: 'espsetup'
 
 captive_portal:
 
@@ -58,6 +64,10 @@ switch:
     auto fansendlow = new FanSendLow();
     App.register_component(fansendlow);
     return {fansendlow};
+
+- platform: restart
+  id: switch_restart
+  name: "${friendly_name} Restart"
 
   switches:
     name: "FanSendLow"
@@ -115,6 +125,14 @@ switch:
     return {fansendjoin};
   switches:
     name: "FanSendJoin"
+
+sensor:
+  - platform: template
+    id: text_sensor_itho-duco_version
+    name: "${friendly_name} Version"
+    update_interval: 5h
+    lambda: |-
+      return {"${version}"};
 
 text_sensor:
 - platform: custom

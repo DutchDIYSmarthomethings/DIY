@@ -1,0 +1,148 @@
+---
+substitutions:
+  device_name: Modbus-Reading
+  friendly_name: Modbus Shield
+  device_description: "Modbus module voor uitlezen/schrijven van RS485 Data"
+  version: '1.0'
+
+  project:
+    name: Dutch DIY smart home things - Modbus
+    version: "${version}"
+
+esphome:
+  name: '${device_name}'
+  platform: ESP8266
+  board: d1_mini
+
+# Enable Home Assistant API
+api:
+
+ota:
+  #password: "SomeOtaPassword"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+captive_portal:
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: '${device_name}'
+    password: 'espsetup'
+
+# Enable/Disable logging
+logger:
+  #level: VERBOSE
+  #baud_rate: 0
+
+switch:
+  - platform: restart
+    id: switch_restart
+    name: "${friendly_name} Restart"
+
+uart:
+  id: mod_bus
+  tx_pin: D7
+  rx_pin: D6
+  baud_rate: 9600
+  stop_bits: 1
+  
+modbus:
+  flow_control_pin: D5
+  id: modbus1
+  send_wait_time: 1000ms
+
+modbus_controller:
+  - id: goodwe
+    ## the Modbus device addr (defaults to 247 (0xF7) for goodwe inverters)
+    address: 0xF7
+    modbus_id: modbus1
+    setup_priority: -10
+    #command_throttle: 250ms
+    update_interval: 15s
+
+sensor:
+  - platform: modbus_controller
+    modbus_controller_id: goodwe
+    id: pv_temperature
+    name: "Temperature"
+    address: 0x030F
+    unit_of_measurement: "C"
+    register_type: holding
+    value_type: S_WORD
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.1
+
+  - platform: modbus_controller
+    modbus_controller_id: goodwe  
+    id: pv_power
+    name: "Feeding Power"
+    address: 0x0233
+    unit_of_measurement: "W"
+    register_type: holding
+    value_type: U_WORD
+    accuracy_decimals: 0
+
+  - platform: modbus_controller
+    modbus_controller_id: goodwe
+    id: pv_total_energy
+    name: "Total Energy"
+    address: 0x0313
+    unit_of_measurement: "kWh"
+    register_type: holding
+    value_type: U_WORD
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.1
+
+  - platform: modbus_controller
+    modbus_controller_id: goodwe
+    id: pv_day_energy
+    name: "Day Energy"
+    address: 0x0236
+    unit_of_measurement: "kWh"
+    register_type: holding
+    value_type: U_WORD
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.1
+
+  - platform: modbus_controller
+    modbus_controller_id: goodwe
+    id: pv_e_day
+    name: "E-Day"
+    address: 0x0320
+    unit_of_measurement: "kW"
+    register_type: holding
+    value_type: U_WORD
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.1
+
+  - platform: modbus_controller
+    modbus_controller_id: goodwe
+    id: pv_p_ac
+    name: "Pac"
+    address: 0x0353
+    unit_of_measurement: "W"
+    register_type: holding
+    value_type: U_WORD
+    accuracy_decimals: 0
+
+  - platform: modbus_controller
+    modbus_controller_id: goodwe
+    id: pv_total_hours
+    name: "Total Hours"
+    address: 0x0314
+    unit_of_measurement: "H"
+    register_type: holding
+    value_type: U_DWORD
+    accuracy_decimals: 0
+
+  - platform: template
+    id: text_sensor_modbus_version
+    name: "${friendly_name} Version"
+    update_interval: 5h
+    lambda: |-
+      return {"${version}"};
